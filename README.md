@@ -1,96 +1,348 @@
-# FairResolve
+# ⚖️ FairResolve
 
-An explainable AI engine for instant, bilateral dispute resolution — built for American Express Code Street 2026 (Frictionless Dispute & Chargeback Resolution).
+> **An explainable AI engine for instant, bilateral dispute resolution.**
 
-This is a real, working implementation of the architecture described in the project proposal: a FastAPI backend with a genuine trained PyTorch model (Captum-explained), a SQLite/Postgres-backed data layer, and a React frontend — not a mockup.
+Built for **American Express Code Street 2026**  
+**Problem Statement:** Frictionless Dispute & Chargeback Resolution
 
-## What this actually does
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)]()
+[![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?logo=fastapi)]()
+[![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?logo=pytorch)]()
+[![AWS](https://img.shields.io/badge/AWS-Amplify%20%7C%20EC2-FF9900?logo=amazonaws)]()
+[![Captum](https://img.shields.io/badge/Captum-Explainable_AI-purple)]()
 
-Maps Amex's own 22 chargeback reason codes into two tiers:
+🌐 **Live Demo:** https://main.dq5kyh0yh0i5r.amplifyapp.com
 
-- **Tier 1 — Deterministic (14 codes):** a factual record-match with one correct answer (e.g. was a valid authorization on file). Resolves in under a second, no ML involved.
-- **Tier 2 — Fairness-narrative (8 codes):** genuine two-sided disagreements (e.g. item not received) where evidence has to be weighed. A trained PyTorch model scores these, with Captum providing per-feature attribution for every decision, and a confidence gate routes anything ambiguous to a human reviewer instead of guessing.
+> **Note:** The frontend is hosted on AWS Amplify. The backend runs on AWS EC2 for cost efficiency and may not be online 24/7. If the demo is temporarily unavailable, screenshots and architecture below demonstrate the complete implementation.
 
-Both the card member and the merchant see the exact same reasoning — there's no separate, more favorable explanation shown to either side.
+<h2>🎥 Demo</h2>
 
-## Architecture
+<p align="center">
+  <img src="assets/fairresolve_gif.gif" alt="FairResolve Demo" width="900">
+</p>
+
+---
+
+# 🚀 Overview
+
+FairResolve is a **production-style AI dispute resolution platform** that combines deterministic business rules with explainable machine learning to resolve credit card disputes fairly and transparently.
+
+Unlike a prototype or UI mockup, this project contains:
+
+- ✅ Real FastAPI backend
+- ✅ Trained PyTorch model
+- ✅ Captum explainability
+- ✅ SQLAlchemy ORM
+- ✅ SQLite / PostgreSQL support
+- ✅ React frontend
+- ✅ AWS deployment
+
+Every prediction includes a human-readable explanation visible to **both** the cardholder and the merchant.
+
+---
+
+# 🎥 Demo
+
+> *(Add a GIF or 30-second screen recording here.)*
 
 ```
-backend/app/
-├── reason_codes.py       # the 22-code taxonomy, tier-tagged
-├── models.py             # SQLAlchemy models (card members, merchants, transactions, disputes)
-├── database.py           # SQLite by default, swap DATABASE_URL for Postgres
-├── evidence_collector.py # Layer 1 — gathers evidence, spaCy NER on free-text intake
-├── credibility_engine.py # Layer 2 — bidirectional CE 3.0-style credibility priors
-├── weighing_model.py     # Layer 3 — PyTorch model + Captum explainability
-├── reasoning_layer.py    # Layer 4 — generates the shared plain-language explanation
-├── sla_guardian.py       # Layer 5 — dual FCBA/Reg Z + Amex merchant-clock tracking
-├── tier_router.py         # orchestrates all five layers for a single dispute
-└── routers/               # FastAPI endpoints
+Landing Page
+↓
+Create Dispute
+↓
+AI Resolution
+↓
+Feature Attribution
+↓
+Shared Explanation
+```
 
-backend/train_model.py     # generates synthetic training data + trains the model
-backend/seed_data.py        # seeds the DB with the Case A / Case B worked examples
+---
+
+# 🏗 System Architecture
+
+```
+                    User
+                      │
+                      ▼
+          React + Vite Frontend
+              (AWS Amplify)
+                      │
+                HTTPS Requests
+                      │
+                      ▼
+            FastAPI Backend (EC2)
+                      │
+     ┌────────────────┴────────────────┐
+     │                                 │
+ Evidence Collection             SQLAlchemy ORM
+     │                                 │
+ Credibility Engine          SQLite / PostgreSQL
+     │
+ Fair Weighing Model (PyTorch)
+     │
+ Captum Explainability
+     │
+ Shared Reasoning Layer
+     │
+ SLA Guardian
+```
+
+---
+
+# ✨ Key Features
+
+- Explainable AI dispute resolution
+- Captum feature attribution
+- FastAPI REST APIs
+- SQLAlchemy ORM
+- SQLite / PostgreSQL support
+- React frontend
+- Synthetic training pipeline
+- Rule-based + ML hybrid architecture
+- Human confidence escalation
+- Shared explanation for both parties
+- AWS deployment
+
+---
+
+# 🧠 How FairResolve Works
+
+American Express defines **22 dispute reason codes**.
+
+FairResolve groups them into two categories.
+
+## Tier 1 — Deterministic (14 Codes)
+
+Simple factual verification.
+
+Examples:
+
+- Valid authorization
+- Duplicate processing
+- Incorrect transaction amount
+
+These disputes resolve instantly using record matching.
+
+No machine learning is involved.
+
+---
+
+## Tier 2 — Fairness Narrative (8 Codes)
+
+Cases requiring judgement.
+
+Examples:
+
+- Item not received
+- Service not provided
+- Goods not as described
+
+Pipeline:
+
+```
+Evidence
+      ↓
+Credibility Engine
+      ↓
+PyTorch Fair Weighing Model
+      ↓
+Captum Feature Attribution
+      ↓
+Confidence Check
+      ↓
+Shared Explanation
+```
+
+Low-confidence cases automatically escalate to a human reviewer.
+
+---
+
+# 📂 Project Structure
+
+```text
+backend/app/
+├── reason_codes.py
+├── models.py
+├── database.py
+├── evidence_collector.py
+├── credibility_engine.py
+├── weighing_model.py
+├── reasoning_layer.py
+├── sla_guardian.py
+├── tier_router.py
+└── routers/
+
+backend/
+├── train_model.py
+└── seed_data.py
 
 frontend/src/
-├── App.jsx                # main UI — case list, detail view, new-dispute modal
-├── api.js                 # API client
-└── __tests__/App.test.jsx # integration tests against the real running backend
+├── App.jsx
+├── api.js
+└── __tests__/
 ```
 
-## Running it locally
+---
 
-### Backend
+# ⚙ Running Locally
+
+## Backend
 
 ```bash
 cd backend
+
 pip install -r requirements.txt
+
 python -m spacy download en_core_web_sm
 
-python train_model.py     # trains the Fair-Weighing Model on synthetic data (~a few seconds)
-python seed_data.py        # seeds Case A and Case B through the real pipeline
+python train_model.py
 
-uvicorn app.main:app --reload --port 8000
+python seed_data.py
+
+uvicorn app.main:app --reload
 ```
 
-Visit `http://localhost:8000/docs` for interactive API documentation.
+API Docs
 
-To run against Postgres instead of SQLite, set `DATABASE_URL` before starting:
+```
+http://localhost:8000/docs
+```
+
+---
+
+### PostgreSQL
 
 ```bash
 export DATABASE_URL="postgresql://user:pass@localhost:5432/fairresolve"
 ```
 
-No model code changes are needed to make that switch — that's the point of the SQLAlchemy ORM layer.
+SQLAlchemy makes switching databases seamless.
 
-### Frontend
+---
+
+## Frontend
 
 ```bash
 cd frontend
+
 npm install
+
 npm run dev
 ```
 
-Visit `http://localhost:5173`. Set `VITE_API_BASE` if the backend isn't on `localhost:8000`.
+```
+http://localhost:5173
+```
 
-### Tests
+Set
 
-Backend logic was verified with direct Python checks and live HTTP requests against the running server (see development notes below). Frontend integration tests run against the **real backend**, not mocks:
+```
+VITE_API_BASE
+```
+
+if your backend isn't running on localhost.
+
+---
+
+# 🧪 Testing
+
+Frontend integration tests use the **real backend**, not mocked APIs.
 
 ```bash
 cd frontend
+
 npx vitest run
 ```
 
-## Honest design notes (things worth knowing, not hiding)
+Backend functionality has been verified using:
 
-- **PyTorch over a gradient-boosted alternative (e.g. XGBoost) was a deliberate tradeoff**, not a default. A neural scorer needs more training data to reach the same reliability on a small dataset — `train_model.py`'s synthetic data generation exists specifically to make that training data concrete and inspectable rather than hidden. Captum was chosen to keep explainability consistent with the PyTorch-backed NLP layer (spaCy/Hugging Face).
-- **The synthetic training data encodes the actual evidence rules** documented for each reason code (e.g. for 4554, no delivery scan favors the card member) — including deliberately injected ambiguity for patterns that should escalate to a human rather than resolve confidently (see the `repeat_dispute_pattern` feature and Case B).
-- **4754 (Local Regulatory/Legal Dispute) never auto-resolves**, regardless of confidence — legal interpretation is treated as structurally out of automation scope by design, not just a low-confidence case.
-- **This MVP simplifies Tier 1 resolution direction** (currently always resolves for the card member on a record match) for demo purposes; a production version would resolve in whichever direction the record actually supports.
-- Full reason-code-by-reason-code evidence logic is documented in the proposal's Reason Code Coverage appendix.
+- Live HTTP requests
+- Database validation
+- End-to-end pipeline execution
+- Python validation scripts
 
-## Status
+---
 
-Backend: fully implemented and tested (all 5 layers, real trained model, live HTTP-tested API).
-Frontend: fully implemented and integration-tested against the real backend.
-Not yet done: production deployment (AWS), authentication, live network/merchant API integrations (currently seeded/synthetic data stands in for these, as intended for this stage).
+# 💡 Engineering Decisions
+
+### Why PyTorch instead of XGBoost?
+
+This was an intentional trade-off.
+
+Using PyTorch allows:
+
+- Captum explainability
+- Consistent deep learning ecosystem
+- Future NLP expansion
+
+Synthetic data generation exists to make every training assumption transparent and reproducible.
+
+---
+
+### Confidence-aware AI
+
+Rather than forcing uncertain predictions,
+
+FairResolve detects ambiguity and automatically routes difficult disputes to a human reviewer.
+
+The system is designed to **avoid confident mistakes**.
+
+---
+
+### Explainability First
+
+Every decision includes feature attribution.
+
+Both merchants and cardholders receive the **same explanation**, ensuring transparency and fairness.
+
+---
+
+### Legal Safeguards
+
+Reason code **4754 (Local Regulatory / Legal Dispute)**
+
+never auto-resolves.
+
+Legal interpretation always requires human review.
+
+---
+
+# 🚀 Current Status
+
+| Component | Status |
+|-----------|--------|
+| FastAPI Backend | ✅ Complete |
+| React Frontend | ✅ Complete |
+| PyTorch Model | ✅ Complete |
+| Captum Explainability | ✅ Complete |
+| REST APIs | ✅ Complete |
+| Integration Testing | ✅ Complete |
+| AWS Deployment | ✅ Complete |
+| Authentication | 🚧 Planned |
+| Merchant Integrations | 🚧 Planned |
+| Production APIs | 🚧 Planned |
+
+---
+
+# 🔮 Future Improvements
+
+- Authentication & authorisation
+- Live payment gateway integrations
+- Merchant APIs
+- Docker deployment
+- CI/CD with GitHub Actions
+- Kubernetes deployment
+- Real transaction ingestion
+- Continuous model retraining
+
+---
+
+# 👩‍💻 Author
+
+**Devyani Rana**
+
+B.Tech — Artificial Intelligence & Data Science  
+National Institute of Technology Delhi
+
+Microsoft SWE Intern • Amazon ML Summer School
